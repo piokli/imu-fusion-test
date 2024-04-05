@@ -7,6 +7,7 @@
 #include "sdkconfig.h"
 #include "../components/i2c_helper/i2c_helper.h"
 #include "../components/lsm6ds33/lsm6ds33.h"
+#include "../components/lis3mdl/lis3mdl.h"
 #include "../components/Fusion/Fusion/Fusion.h"
 
 static const char *TAG = "fusion-test";
@@ -65,6 +66,7 @@ void app_main(void)
     // Initialize I2C and connect to sensors
     i2c_helper_master_init();
 	lsm6ds33_test_connection();
+	lis3mdl_test_connection();
 
 	// Delay for safety
 	vTaskDelay(50 / portTICK_PERIOD_MS);
