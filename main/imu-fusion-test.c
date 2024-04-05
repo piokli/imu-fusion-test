@@ -73,6 +73,7 @@ void app_main(void)
 
     // Set up sensors
 	lsm6ds33_default_setup();
+	lis3mdl_default_setup();
 
 	// Create tasks
     xTaskCreate(blinky, "blinky", 1024, NULL, 1, NULL);
@@ -80,6 +81,7 @@ void app_main(void)
 
 	struct vector acc_data;
 	struct vector gyro_data;
+	struct lis3mdl_vector mag_data;
 
 	// Fusion stuff
     FusionAhrs ahrs;
@@ -89,15 +91,18 @@ void app_main(void)
     while (true) {
 		lsm6ds33_read_gyro_raw(&gyro_data);
 		lsm6ds33_read_acc_raw(&acc_data);
+		lis3mdl_read_magneto_raw(&mag_data);
 
 		lsm6ds33_vector_calculate_gyro_raw(&gyro_data);
 		lsm6ds33_vector_calculate_acc_raw(&acc_data);
 
         const FusionVector gyroscope = {{gyro_data.x, gyro_data.y, gyro_data.z}}; // replace this with actual gyroscope data in degrees/s
         const FusionVector accelerometer = {{acc_data.x, acc_data.y, acc_data.z}}; // replace this with actual accelerometer data in g
+		const FusionVector magnetometer = {{mag_data.x, mag_data.y, mag_data.z}};
 
 		millis = esp_log_timestamp();
-        FusionAhrsUpdateNoMagnetometer(&ahrs, gyroscope, accelerometer, (millis - millis_last) * 0.001f);
+        //FusionAhrsUpdateNoMagnetometer(&ahrs, gyroscope, accelerometer, (millis - millis_last) * 0.001f);
+		FusionAhrsUpdate(&ahrs, gyroscope, accelerometer, magnetometer, (millis - millis_last) * 0.001f);
 		millis_last = millis;
 
         // Print algorithm outputs
