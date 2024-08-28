@@ -34,16 +34,17 @@ esp_err_t lis3mdl_test_connection(void)
 
 esp_err_t lis3mdl_default_setup(void)
 {
-    // Typical startup sequence from AN4602:
-    // "1. Write 40h in CTRL_REG2. Sets full scale ±12 Hz."
+    // Typical startup sequence from    :
+    // "1. Write 40h in CTRL_REG2. Sets full scale ±12 G."
     uint8_t ctrl_reg2_setup = 0x40;
     esp_err_t ret = i2c_helper_write_reg(LIS3MDL_I2C_ADDR, LIS3MDL_CTRL_REG2_ADDR, &ctrl_reg2_setup, 1);
 	if (ret != ESP_OK) {
 	    return ret;
 	}
     // "2. Write FCh in CTRL_REG1. Sets UHP mode on the X/Y axes, ODR at 80 Hz and
-    // activates temperature sensor."
-    uint8_t ctrl_reg1_setup = 0xFC;
+    // activates temperature sensor." -> uint8_t ctrl_reg1_setup = 0xFC;
+    // Instead I select 155Hz at UHP mode
+    uint8_t ctrl_reg1_setup = 0xFE;
     ret = i2c_helper_write_reg(LIS3MDL_I2C_ADDR, LIS3MDL_CTRL_REG1_ADDR, &ctrl_reg1_setup, 1);
 	if (ret != ESP_OK) {
 	    return ret;
@@ -108,10 +109,16 @@ esp_err_t lis3mdl_read_magneto_raw(struct lis3mdl_vector *m)
     m->x = (int16_t)((mx[1] << 8) | mx[0]);
     m->y = (int16_t)((my[1] << 8) | my[0]);
     m->z = (int16_t)((mz[1] << 8) | mz[0]);
+    // data in arbitrary units
     // printf("mag_x = %6.0f, mag_y = %6.0f, mag_z = %6.0f\t", m->x, m->y, m->z);
 
     // By activating the FAST_READ option we allow the transfer of the high part of the output
     // data only and we can disregard the low part of the output data. 
+
+    free(mx);
+    free(my);
+    free(mz);
+
     return ret;
 }
 

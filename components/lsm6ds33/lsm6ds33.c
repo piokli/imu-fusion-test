@@ -37,11 +37,14 @@ esp_err_t lsm6ds33_default_setup(void)
 	esp_err_t ret;
 
 	uint8_t ctrl1_xl_setup = LSM6DS33_ACC_DATA_RATE_104_HZ |
-			                 LSM6DS33_ACC_FULL_SCALE_2_G |    // tu rozdzielczosc tez ciut za mala chyba? moze 4G albo 8 nawet?
+			                 LSM6DS33_ACC_FULL_SCALE_4_G |    // tu rozdzielczosc tez ciut za mala chyba? moze 4G albo 8 nawet?
 							 LSM6DS33_ACC_AA_BANDWIDTH_200_HZ;
 
 	uint8_t ctrl2_g_setup = LSM6DS33_GYRO_DATA_RATE_104_HZ |
-			                LSM6DS33_GYRO_FULL_SCALE_250_DPS; // powinno byc chyba wiecej - 500dps
+			                LSM6DS33_GYRO_FULL_SCALE_1000_DPS; // powinno byc chyba wiecej - 500dps
+
+	uint8_t ctrl3_c_setup = 0x44; 	// default + BDU (block data update) activation 
+									// because reading is not synchronised yet (LSM6DS33-AN4682, 3.4)
 
 	// ctrl3_c_setup; ctrl4_c_setup; ctrl5_c_setup;
 	// ctrl6_c_setup(acc hi-perf); ctr7_c_setup(gyro hi-perf);
@@ -56,6 +59,11 @@ esp_err_t lsm6ds33_default_setup(void)
 	    return ret;
 	}
 	ret = i2c_helper_write_reg(LSM6DS33_I2C_ADDR, LSM6DS33_CTRL2_G_ADDR, &ctrl2_g_setup, 1);
+		if (ret != ESP_OK) {
+	    return ret;
+	}
+	ret = i2c_helper_write_reg(LSM6DS33_I2C_ADDR, LSM6DS33_CTRL3_C_ADDR, &ctrl3_c_setup, 1);
+
 
 	return ret;
 }
@@ -131,10 +139,10 @@ void lsm6ds33_vector_calculate_acc_raw(struct vector *a)
 	// for +-8g => 0.244
 	// for +-16g => 0.488
 
-	// for +-2g (default):
-	a->x *= 0.061;
-	a->y *= 0.061;
-	a->z *= 0.061;
+	// for +-4g (default):
+	a->x *= 0.122;
+	a->y *= 0.122;
+	a->z *= 0.122;
 }
 
 void lsm6ds33_vector_calculate_gyro_raw(struct vector *g)
@@ -147,10 +155,10 @@ void lsm6ds33_vector_calculate_gyro_raw(struct vector *g)
 	// for +-1000dps => 35
 	// for +-2000dps => 70
 
-	// for +-250dps (default):
-	g->x *= 8.75 / 1000;
-	g->y *= 8.75 / 1000;
-	g->z *= 8.75 / 1000;
+	// for +-1000dps:
+	g->x *= 35.0 / 1000;
+	g->y *= 35.0 / 1000;
+	g->z *= 35.0 / 1000;
 }
 
 void lsm6ds33_vector_normalise(struct vector *a)
