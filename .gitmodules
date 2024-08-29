@@ -1,3 +1,7 @@
 [submodule "components/Fusion"]
 	path = components/Fusion
 	url = https://github.com/piokli/Fusion.git
+[submodule "components/lsm6ds33"]
+	path = components/lsm6ds33
+	url = https://github.com/piokli/lsm6ds33.git
+
