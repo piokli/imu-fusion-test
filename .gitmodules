@@ -9,3 +9,6 @@
 [submodule "components/lis3mdl"]
 	path = components/lis3mdl
 	url = https://github.com/piokli/lis3mdl.git
+[submodule "components/i2c_helper"]
+	path = components/i2c_helper
+	url = https://github.com/piokli/i2c_helper.git
